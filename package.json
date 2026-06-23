@@ -1,0 +1,197 @@
+{
+  "name": "ningk-dashboard",
+  "displayName": "Ningk Dashboard",
+  "description": "A personal VS Code dashboard with projects, weather, calendar subscriptions, and todos.",
+  "version": "0.1.0",
+  "publisher": "ningk",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "main": "./extension.js",
+  "activationEvents": [
+    "*"
+  ],
+  "contributes": {
+    "commands": [
+      {
+        "command": "ningkDashboard.open",
+        "title": "Ningk Dashboard: Open"
+      },
+      {
+        "command": "ningkDashboard.refresh",
+        "title": "Ningk Dashboard: Refresh"
+      },
+      {
+        "command": "ningkDashboard.manageCalendars",
+        "title": "Ningk Dashboard: Manage Calendars"
+      },
+      {
+        "command": "ningkDashboard.addProject",
+        "title": "Ningk Dashboard: Add Project"
+      }
+    ],
+    "configuration": {
+      "title": "Ningk Dashboard",
+      "properties": {
+        "ningkDashboard.calendarRegion": {
+          "type": "string",
+          "enum": [
+            "auto",
+            "cn",
+            "off"
+          ],
+          "default": "auto",
+          "description": "Built-in holiday region shown in the dashboard calendar. Auto chooses the region from VS Code language."
+        },
+        "ningkDashboard.calendarSubscriptions": {
+          "type": "array",
+          "default": [],
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "url": {
+                "type": "string"
+              },
+              "type": {
+                "type": "string",
+                "enum": [
+                  "event",
+                  "holiday",
+                  "anniversary",
+                  "task"
+                ]
+              },
+              "enabled": {
+                "type": "boolean",
+                "default": true
+              },
+              "color": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "name",
+              "url"
+            ]
+          },
+          "description": "Network iCalendar (.ics) subscriptions to show in the dashboard calendar."
+        },
+        "ningkDashboard.calendarItems": {
+          "type": "array",
+          "default": [],
+          "items": {
+            "type": "object",
+            "properties": {
+              "date": {
+                "type": "string"
+              },
+              "title": {
+                "type": "string"
+              },
+              "type": {
+                "type": "string",
+                "enum": [
+                  "holiday",
+                  "anniversary",
+                  "event",
+                  "task"
+                ]
+              },
+              "source": {
+                "type": "string"
+              },
+              "color": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "date",
+              "title"
+            ]
+          },
+          "description": "Custom holiday, anniversary, task, or event entries to show in the calendar. Date format must be YYYY-MM-DD."
+        },
+        "ningkDashboard.autoOpen": {
+          "type": "boolean",
+          "default": true,
+          "description": "Automatically open the dashboard after VS Code startup."
+        },
+        "ningkDashboard.weatherLocation": {
+          "type": "string",
+          "enum": [
+            "auto",
+            "manual",
+            "off"
+          ],
+          "default": "auto",
+          "description": "Weather location mode. Auto uses approximate IP-based location; manual uses the configured latitude/longitude; off disables weather."
+        },
+        "ningkDashboard.city": {
+          "type": "string",
+          "default": "Shanghai",
+          "description": "Fallback/manual weather display city name. Used when weatherLocation is manual, or when auto location fails."
+        },
+        "ningkDashboard.latitude": {
+          "type": "number",
+          "default": 31.2304,
+          "description": "Fallback/manual weather latitude. Used when weatherLocation is manual, or when auto location fails."
+        },
+        "ningkDashboard.longitude": {
+          "type": "number",
+          "default": 121.4737,
+          "description": "Fallback/manual weather longitude. Used when weatherLocation is manual, or when auto location fails."
+        },
+        "ningkDashboard.temperatureUnit": {
+          "type": "string",
+          "enum": [
+            "celsius",
+            "fahrenheit"
+          ],
+          "default": "celsius",
+          "description": "Temperature unit for weather."
+        },
+        "ningkDashboard.projects": {
+          "type": "array",
+          "default": [],
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "path": {
+                "type": "string"
+              },
+              "accent": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "name",
+              "path"
+            ]
+          },
+          "description": "Projects shown in the left-side launcher. Use the Add Project command or the + button in the dashboard to add entries."
+        }
+      }
+    }
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ningk/Ningk-Dashboard.git"
+  },
+  "scripts": {
+    "package": "vsce package"
+  },
+  "devDependencies": {
+    "@vscode/test-cli": "^0.0.15",
+    "@vscode/test-electron": "^3.0.0"
+  }
+}
