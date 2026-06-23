@@ -1,15 +1,15 @@
 ﻿# Ningk Dashboard
 
-[English README](README.md)
+[English README](https://github.com/Ningkang-ZHAO/Ningk-Dashboard/blob/main/README.md)
 
-Ningk Dashboard 是一个用于 Visual Studio Code 的个人启动仪表盘。它把项目启动器、时钟、天气、月历、网络日历订阅、节假日和 TodoList 放在一个 VS Code Webview 中。(背景颜色基于主题色)
+Ningk Dashboard 是一个用于 Visual Studio Code 的个人启动仪表盘。它把项目启动器、时钟、天气、月历、网络日历订阅、节假日和 TodoList 放在一个 VS Code Webview 中。背景颜色会跟随当前 VS Code 主题。
 
-![Ningk Dashboard 主界面效果图](images/ningk-dashboard-main.png)
+![Ningk Dashboard 主界面效果图](https://raw.githubusercontent.com/Ningkang-ZHAO/Ningk-Dashboard/main/images/ningk-dashboard-main.png)
 
 ## 特性
 
 - 左侧项目启动器。
-- 可以直接在 Dashboard 界面添加项目。
+- 可以直接在 Dashboard 界面添加项目，不需要手动改 JSON。
 - 根据 VS Code Webview 环境显示本地时间和日期。
 - 天气卡片使用 Open-Meteo，支持自动 IP 定位和手动坐标兜底。
 - 可点击日期的月历。
@@ -21,8 +21,7 @@ Ningk Dashboard 是一个用于 Visual Studio Code 的个人启动仪表盘。�
 
 ## 具体修改内容
 
-- 命令和设置命名空间统一为
-  ingkDashboard.\*`。
+- 命令和设置命名空间统一为 `ningkDashboard.*`。
 - 新增 `Ningk Dashboard: Add Project` 命令和 Projects 旁边的 `+` 按钮。
 - 删除只能展示但不能使用的占位卡片，只保留可操作区域。
 - 增加日期选中逻辑：点击有日程或节假日的日期时显示详情，没有内容则不显示额外卡片。
@@ -43,8 +42,7 @@ Ningk Dashboard 是一个用于 Visual Studio Code 的个人启动仪表盘。�
 - 点击 Dashboard 左侧 `Projects` 旁边的 `+`。
 - 在命令面板运行 `Ningk Dashboard: Add Project`。
 
-扩展会把项目写入 VS Code 设置
-ingkDashboard.projects`。
+扩展会把项目写入 VS Code 设置 `ningkDashboard.projects`。
 
 ## 日历
 

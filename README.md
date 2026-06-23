@@ -1,10 +1,10 @@
 ﻿# Ningk Dashboard
 
-[中文文档](README.zh-CN.md)
+[中文文档](https://github.com/Ningkang-ZHAO/Ningk-Dashboard/blob/main/README.zh-CN.md)
 
-Ningk Dashboard is a personal startup dashboard for Visual Studio Code. It provides a project launcher, clock, weather, calendar subscriptions, built-in holiday support, and a simple TodoList in one VS Code webview. (The color of background is based on the theme)
+Ningk Dashboard is a personal startup dashboard for Visual Studio Code. It provides a project launcher, clock, weather, calendar subscriptions, built-in holiday support, and a simple TodoList in one VS Code webview. The background color follows the active VS Code theme.
 
-![Ningk Dashboard main screen](images/ningk-dashboard-main.png)
+![Ningk Dashboard main screen](https://raw.githubusercontent.com/Ningkang-ZHAO/Ningk-Dashboard/main/images/ningk-dashboard-main.png)
 
 ## Features
 
@@ -21,8 +21,7 @@ Ningk Dashboard is a personal startup dashboard for Visual Studio Code. It provi
 
 ## What changed
 
-- Command and setting namespace is
-  ingkDashboard.\*`.
+- Command and setting namespace is `ningkDashboard.*`.
 - Added `Ningk Dashboard: Add Project` and a `+` button beside Projects.
 - Removed placeholder-only cards and kept usable surfaces.
 - Added selectable calendar dates and conditional day details.
@@ -43,8 +42,7 @@ Use either method:
 - Click the `+` button beside `Projects`.
 - Run `Ningk Dashboard: Add Project` from the command palette.
 
-The extension writes entries to
-ingkDashboard.projects` in VS Code settings.
+The extension writes entries to `ningkDashboard.projects` in VS Code settings.
 
 ## Calendar
 
