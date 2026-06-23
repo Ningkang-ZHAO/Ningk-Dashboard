@@ -2,7 +2,7 @@
   "name": "ningk-dashboard",
   "displayName": "Ningk Dashboard",
   "description": "A personal VS Code dashboard with projects, weather, calendar subscriptions, and todos.",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "publisher": "ningk",
   "engines": {
     "vscode": "^1.85.0"
@@ -193,5 +193,6 @@
   "devDependencies": {
     "@vscode/test-cli": "^0.0.15",
     "@vscode/test-electron": "^3.0.0"
-  }
+  },
+  "icon": "icon.png"
 }
