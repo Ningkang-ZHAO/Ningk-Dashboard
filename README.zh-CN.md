@@ -21,6 +21,7 @@ Ningk Dashboard 是一个用于 Visual Studio Code 的个人启动仪表盘。�
 
 ## 具体修改内容
 
+- 0.1.3：收窄扩展激活范围，并支持恢复已有 Dashboard Webview，避免 Linux 下 VS Code 重启、窗口恢复或扩展宿主重载后出现多个 Dashboard。
 - 命令和设置命名空间统一为 `ningkDashboard.*`。
 - 新增 `Ningk Dashboard: Add Project` 命令和 Projects 旁边的 `+` 按钮。
 - 删除只能展示但不能使用的占位卡片，只保留可操作区域。
