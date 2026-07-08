@@ -11,6 +11,9 @@ let extensionContext;
 const CALENDAR_CACHE_KEY = "dashboard.calendarItems.v4";
 const SUBSCRIPTION_CACHE_KEY = "dashboard.calendarSubscriptions.v3";
 const TODO_CACHE_KEY = "dashboard.todos.v1";
+const DASHBOARD_VIEW_TYPE = "ningkDashboard";
+const DASHBOARD_TITLE = "Dashboard";
+const AUTO_OPEN_DELAY_MS = 500;
 
 function activate(context) {
   extensionContext = context;
@@ -33,10 +36,22 @@ function activate(context) {
       await addProject();
       postDashboardState();
     }),
+    vscode.window.registerWebviewPanelSerializer(DASHBOARD_VIEW_TYPE, {
+      async deserializeWebviewPanel(panel) {
+        setupDashboardPanel(panel, context);
+        await refreshAll(false);
+        postDashboardState();
+      },
+    }),
   );
 
   if (vscode.workspace.getConfiguration("ningkDashboard").get("autoOpen", true)) {
-    openDashboard(context);
+    const autoOpenTimer = setTimeout(() => {
+      if (!currentPanel && !hasOpenDashboardTab()) {
+        openDashboard(context);
+      }
+    }, AUTO_OPEN_DELAY_MS);
+    context.subscriptions.push({ dispose: () => clearTimeout(autoOpenTimer) });
   }
 
   weatherTimer = setInterval(async () => {
@@ -92,13 +107,19 @@ function openDashboard(context) {
     return;
   }
 
-  currentPanel = vscode.window.createWebviewPanel(
-    "ningkDashboard",
-    "Dashboard",
+  const panel = vscode.window.createWebviewPanel(
+    DASHBOARD_VIEW_TYPE,
+    DASHBOARD_TITLE,
     vscode.ViewColumn.One,
-    { enableScripts: true, retainContextWhenHidden: true },
+    getWebviewOptions(),
   );
 
+  setupDashboardPanel(panel, context);
+}
+
+function setupDashboardPanel(panel, context) {
+  currentPanel = panel;
+  currentPanel.webview.options = getWebviewOptions();
   currentPanel.iconPath = new vscode.ThemeIcon("home");
   currentPanel.webview.html = getHtml(currentPanel.webview);
 
@@ -173,8 +194,20 @@ function openDashboard(context) {
   });
 
   currentPanel.onDidDispose(() => {
-    currentPanel = undefined;
+    if (currentPanel === panel) {
+      currentPanel = undefined;
+    }
   });
+}
+
+function getWebviewOptions() {
+  return { enableScripts: true, retainContextWhenHidden: true };
+}
+
+function hasOpenDashboardTab() {
+  return vscode.window.tabGroups.all.some((group) =>
+    group.tabs.some((tab) => tab.input?.viewType === DASHBOARD_VIEW_TYPE),
+  );
 }
 
 function projectPathToUri(projectPath) {

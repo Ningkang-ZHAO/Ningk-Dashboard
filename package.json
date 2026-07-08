@@ -12,7 +12,8 @@
   ],
   "main": "./extension.js",
   "activationEvents": [
-    "*"
+    "onStartupFinished",
+    "onWebviewPanel:ningkDashboard"
   ],
   "contributes": {
     "commands": [
