@@ -2,7 +2,7 @@
   "name": "ningk-dashboard",
   "displayName": "Ningk Dashboard",
   "description": "A personal VS Code dashboard with projects, weather, calendar subscriptions, and todos.",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "publisher": "ningk",
   "engines": {
     "vscode": "^1.85.0"
@@ -121,7 +121,7 @@
         "ningkDashboard.autoOpen": {
           "type": "boolean",
           "default": true,
-          "description": "Automatically open the dashboard after VS Code startup."
+          "description": "Automatically open the dashboard once per VS Code window session."
         },
         "ningkDashboard.weatherLocation": {
           "type": "string",

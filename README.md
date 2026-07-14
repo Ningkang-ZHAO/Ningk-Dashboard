@@ -21,6 +21,7 @@ Ningk Dashboard is a personal startup dashboard for Visual Studio Code. It provi
 
 ## What changed
 
+- Version 0.1.4: made auto open run only once per VS Code window session, so remote/Jupyter extension host reloads do not bring the dashboard back over the active editor.
 - Version 0.1.3: reduced extension activation scope and restored existing dashboard webviews to prevent duplicate dashboards after VS Code restarts or extension host reloads, especially on Linux.
 - Command and setting namespace is `ningkDashboard.*`.
 - Added `Ningk Dashboard: Add Project` and a `+` button beside Projects.

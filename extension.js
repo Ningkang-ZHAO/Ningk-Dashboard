@@ -14,6 +14,7 @@ const TODO_CACHE_KEY = "dashboard.todos.v1";
 const DASHBOARD_VIEW_TYPE = "ningkDashboard";
 const DASHBOARD_TITLE = "Dashboard";
 const AUTO_OPEN_DELAY_MS = 500;
+const AUTO_OPEN_SESSION_KEY = "dashboard.autoOpenedSession.v1";
 
 function activate(context) {
   extensionContext = context;
@@ -45,14 +46,7 @@ function activate(context) {
     }),
   );
 
-  if (vscode.workspace.getConfiguration("ningkDashboard").get("autoOpen", true)) {
-    const autoOpenTimer = setTimeout(() => {
-      if (!currentPanel && !hasOpenDashboardTab()) {
-        openDashboard(context);
-      }
-    }, AUTO_OPEN_DELAY_MS);
-    context.subscriptions.push({ dispose: () => clearTimeout(autoOpenTimer) });
-  }
+  scheduleAutoOpen(context);
 
   weatherTimer = setInterval(async () => {
     await refreshWeather();
@@ -98,6 +92,38 @@ function postDashboardState() {
   currentPanel.webview.postMessage({ type: "weather", payload: latestWeather });
   currentPanel.webview.postMessage({ type: "calendarItems", payload: latestCalendarItems });
   currentPanel.webview.postMessage({ type: "todos", payload: latestTodos });
+}
+
+function scheduleAutoOpen(context) {
+  if (!vscode.workspace.getConfiguration("ningkDashboard").get("autoOpen", true)) {
+    return;
+  }
+  if (hasAutoOpenedThisSession(context)) {
+    return;
+  }
+
+  const autoOpenTimer = setTimeout(async () => {
+    if (hasAutoOpenedThisSession(context)) {
+      return;
+    }
+    await markAutoOpenedThisSession(context);
+    if (!currentPanel && !hasOpenDashboardTab()) {
+      openDashboard(context);
+    }
+  }, AUTO_OPEN_DELAY_MS);
+  context.subscriptions.push({ dispose: () => clearTimeout(autoOpenTimer) });
+}
+
+function hasAutoOpenedThisSession(context) {
+  return context.workspaceState.get(AUTO_OPEN_SESSION_KEY) === getAutoOpenSessionId();
+}
+
+async function markAutoOpenedThisSession(context) {
+  await context.workspaceState.update(AUTO_OPEN_SESSION_KEY, getAutoOpenSessionId());
+}
+
+function getAutoOpenSessionId() {
+  return vscode.env.sessionId || "unknown";
 }
 
 function openDashboard(context) {
