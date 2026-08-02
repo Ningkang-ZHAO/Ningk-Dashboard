@@ -9,7 +9,7 @@ Ningk Dashboard is a personal startup dashboard for Visual Studio Code. It provi
 ## Features
 
 - Project launcher in the left sidebar.
-- Add projects from the dashboard UI without editing JSON by hand.
+- Add, edit, and remove projects from the dashboard UI without editing JSON by hand.
 - Local clock and date based on the VS Code webview environment.
 - Weather card powered by Open-Meteo, with automatic IP location and manual fallback coordinates.
 - Monthly calendar with clickable dates.
@@ -21,6 +21,10 @@ Ningk Dashboard is a personal startup dashboard for Visual Studio Code. It provi
 
 ## What changed
 
+- Version 0.1.8: added an `Edit` button beside the Projects `+` button so users without right-click access can edit paths or delete projects.
+- Version 0.1.7: changed project right-click actions to an in-dashboard context menu that appears at the cursor, closer to the Windows context menu interaction.
+- Version 0.1.6: replaced visible project edit/remove buttons with a right-click project action menu. Editing opens a folder picker, and deleting uses a VS Code confirmation prompt.
+- Version 0.1.5: added project edit and remove support so broken or outdated paths can be fixed directly from the dashboard.
 - Version 0.1.4: made auto open run only once per VS Code window session, so remote/Jupyter extension host reloads do not bring the dashboard back over the active editor.
 - Version 0.1.3: reduced extension activation scope and restored existing dashboard webviews to prevent duplicate dashboards after VS Code restarts or extension host reloads, especially on Linux.
 - Command and setting namespace is `ningkDashboard.*`.
@@ -37,14 +41,14 @@ Ningk Dashboard is a personal startup dashboard for Visual Studio Code. It provi
 - `Ningk Dashboard: Manage Calendars`
 - `Ningk Dashboard: Add Project`
 
-## Add projects
+## Manage projects
 
-Use either method:
+To add a project, use either method:
 
 - Click the `+` button beside `Projects`.
 - Run `Ningk Dashboard: Add Project` from the command palette.
 
-The extension writes entries to `ningkDashboard.projects` in VS Code settings.
+Click `Edit` beside `Projects` or right-click a project to edit its path or remove it. Editing opens a folder picker, and deleting asks for confirmation in VS Code. The extension writes entries to `ningkDashboard.projects` in VS Code settings.
 
 ## Calendar
 

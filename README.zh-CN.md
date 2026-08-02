@@ -9,7 +9,7 @@ Ningk Dashboard 是一个用于 Visual Studio Code 的个人启动仪表盘。�
 ## 特性
 
 - 左侧项目启动器。
-- 可以直接在 Dashboard 界面添加项目，不需要手动改 JSON。
+- 可以直接在 Dashboard 界面添加、编辑和删除项目，不需要手动改 JSON。
 - 根据 VS Code Webview 环境显示本地时间和日期。
 - 天气卡片使用 Open-Meteo，支持自动 IP 定位和手动坐标兜底。
 - 可点击日期的月历。
@@ -21,6 +21,10 @@ Ningk Dashboard 是一个用于 Visual Studio Code 的个人启动仪表盘。�
 
 ## 具体修改内容
 
+- 0.1.8：Projects 的 `+` 右侧增加 `Edit` 按钮，方便没有右键操作的用户修改路径或删除项目。
+- 0.1.7：Projects 右键操作改为 Dashboard 内贴近鼠标位置弹出的菜单，更接近 Windows 右键菜单交互。
+- 0.1.6：Projects 的编辑/删除改为右键菜单。编辑会打开文件夹选择器，删除会使用 VS Code 确认提示。
+- 0.1.5：Projects 增加编辑和删除能力，路径失效或写错后可以直接在 Dashboard 中修正或移除。
 - 0.1.4：自动打开改为每个 VS Code 窗口会话只触发一次，避免远程/Jupyter 连接不稳定导致扩展宿主重载时，Dashboard 反复覆盖当前编辑器。
 - 0.1.3：收窄扩展激活范围，并支持恢复已有 Dashboard Webview，避免 Linux 下 VS Code 重启、窗口恢复或扩展宿主重载后出现多个 Dashboard。
 - 命令和设置命名空间统一为 `ningkDashboard.*`。
@@ -37,14 +41,14 @@ Ningk Dashboard 是一个用于 Visual Studio Code 的个人启动仪表盘。�
 - `Ningk Dashboard: Manage Calendars`
 - `Ningk Dashboard: Add Project`
 
-## 添加项目
+## 管理项目
 
-有两种方式：
+添加项目有两种方式：
 
 - 点击 Dashboard 左侧 `Projects` 旁边的 `+`。
 - 在命令面板运行 `Ningk Dashboard: Add Project`。
 
-扩展会把项目写入 VS Code 设置 `ningkDashboard.projects`。
+点击 Projects 旁边的 `Edit`，或右键项目，都可以编辑路径或删除条目。编辑会打开文件夹选择器，删除会在 VS Code 中弹出确认提示。扩展会把项目写入 VS Code 设置 `ningkDashboard.projects`。
 
 ## 日历
 

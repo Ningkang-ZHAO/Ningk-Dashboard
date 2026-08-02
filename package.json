@@ -2,7 +2,7 @@
   "name": "ningk-dashboard",
   "displayName": "Ningk Dashboard",
   "description": "A personal VS Code dashboard with projects, weather, calendar subscriptions, and todos.",
-  "version": "0.1.4",
+  "version": "0.1.8",
   "publisher": "ningk",
   "engines": {
     "vscode": "^1.85.0"
@@ -178,7 +178,7 @@
               "path"
             ]
           },
-          "description": "Projects shown in the left-side launcher. Use the Add Project command or the + button in the dashboard to add entries."
+          "description": "Projects shown in the left-side launcher. Use the Edit button or right-click a project to edit its path or remove it."
         }
       }
     }

@@ -196,6 +196,24 @@ function setupDashboardPanel(panel, context) {
       return;
     }
 
+    if (message.type === "manageProjects") {
+      await manageProjects();
+      postDashboardState();
+      return;
+    }
+
+    if (message.type === "editProjectPath") {
+      await editProjectPath(Number(message.index));
+      postDashboardState();
+      return;
+    }
+
+    if (message.type === "deleteProject") {
+      await deleteProject(Number(message.index));
+      postDashboardState();
+      return;
+    }
+
     if (message.type === "openCalendarItem") {
       await openCalendarItem(message.item);
       return;
@@ -263,35 +281,8 @@ function uriToProjectPath(uri) {
 async function addProject() {
   const config = vscode.workspace.getConfiguration("ningkDashboard");
   const cfg = getDashboardConfig();
-  const mode = await vscode.window.showQuickPick(
-    [
-      { label: "$(folder-opened) Choose Folder", value: "folder" },
-      { label: "$(edit) Enter Path Manually", value: "manual" },
-    ],
-    { placeHolder: "Add a project to Ningk Dashboard" },
-  );
-  if (!mode) return;
-
-  let projectPath = "";
-  if (mode.value === "folder") {
-    const picked = await vscode.window.showOpenDialog({
-      canSelectFiles: false,
-      canSelectFolders: true,
-      canSelectMany: false,
-      openLabel: "Add Project",
-      title: "Choose project folder",
-    });
-    if (!picked || !picked.length) return;
-    projectPath = uriToProjectPath(picked[0]);
-  } else {
-    const input = await vscode.window.showInputBox({
-      title: "Project path or URI",
-      prompt: "Supports local paths, file://, vscode-remote://, and wsl://Ubuntu/path",
-      placeHolder: "D:/Projects/MyProject",
-    });
-    if (!input) return;
-    projectPath = input.trim();
-  }
+  const projectPath = await promptProjectPath();
+  if (!projectPath) return;
 
   const defaultName = path.basename(projectPath.replace(/[\\/]+$/, "")) || "Project";
   const name = await vscode.window.showInputBox({
@@ -307,6 +298,142 @@ async function addProject() {
   ];
   await config.update("projects", next, vscode.ConfigurationTarget.Global);
   vscode.window.showInformationMessage("Added project to Ningk Dashboard: " + name.trim());
+}
+
+async function manageProjects() {
+  const cfg = getDashboardConfig();
+  if (!cfg.projects.length) {
+    vscode.window.showInformationMessage("No projects configured in Ningk Dashboard.");
+    return;
+  }
+
+  const selected = await vscode.window.showQuickPick(
+    cfg.projects.map((project, index) => ({
+      label: project.name || project.path || "Untitled",
+      description: project.path || "",
+      index,
+    })),
+    {
+      placeHolder: "Choose a project to edit or delete",
+      title: "Manage Projects",
+    },
+  );
+  if (!selected) return;
+
+  const action = await vscode.window.showQuickPick(
+    [
+      { label: "$(folder-opened) Edit Path", action: "edit" },
+      { label: "$(trash) Delete Project", action: "delete" },
+    ],
+    {
+      placeHolder: selected.label,
+      title: "Project Actions",
+    },
+  );
+  if (!action) return;
+
+  if (action.action === "edit") {
+    await editProjectPath(selected.index);
+    return;
+  }
+  if (action.action === "delete") {
+    await deleteProject(selected.index);
+  }
+}
+
+async function editProjectPath(index) {
+  const config = vscode.workspace.getConfiguration("ningkDashboard");
+  const cfg = getDashboardConfig();
+  if (!Number.isInteger(index) || index < 0 || index >= cfg.projects.length) {
+    vscode.window.showWarningMessage("Project entry was not found. Refresh the dashboard and try again.");
+    return;
+  }
+
+  const current = cfg.projects[index] || {};
+  const projectPath = await promptProjectFolderPath();
+  if (!projectPath) return;
+
+  const duplicateIndex = cfg.projects.findIndex(
+    (project, projectIndex) => projectIndex !== index && project?.path === projectPath,
+  );
+  if (duplicateIndex >= 0) {
+    vscode.window.showWarningMessage("A project with this path already exists in Ningk Dashboard.");
+    return;
+  }
+
+  const next = cfg.projects.map((project, projectIndex) =>
+    projectIndex === index
+      ? { ...project, path: projectPath }
+      : project,
+  );
+  await config.update("projects", next, vscode.ConfigurationTarget.Global);
+  vscode.window.showInformationMessage("Updated project path in Ningk Dashboard: " + (current.name || projectPath));
+}
+
+async function deleteProject(index) {
+  const config = vscode.workspace.getConfiguration("ningkDashboard");
+  const cfg = getDashboardConfig();
+  if (!Number.isInteger(index) || index < 0 || index >= cfg.projects.length) {
+    vscode.window.showWarningMessage("Project entry was not found. Refresh the dashboard and try again.");
+    return;
+  }
+
+  const project = cfg.projects[index] || {};
+  const label = project.name || project.path || "this project";
+  const confirmed = await vscode.window.showWarningMessage(
+    "Remove " + label + " from Ningk Dashboard?",
+    { modal: true },
+    "Remove",
+  );
+  if (confirmed !== "Remove") return;
+
+  await config.update(
+    "projects",
+    cfg.projects.filter((_, projectIndex) => projectIndex !== index),
+    vscode.ConfigurationTarget.Global,
+  );
+  vscode.window.showInformationMessage("Removed project from Ningk Dashboard: " + label);
+}
+
+async function promptProjectPath(value = "") {
+  const mode = await vscode.window.showQuickPick(
+    [
+      { label: "$(folder-opened) Choose Folder", value: "folder" },
+      { label: "$(edit) Enter Path Manually", value: "manual" },
+    ],
+    { placeHolder: "Choose how to set the project path" },
+  );
+  if (!mode) return "";
+
+  if (mode.value === "folder") {
+    const picked = await vscode.window.showOpenDialog({
+      canSelectFiles: false,
+      canSelectFolders: true,
+      canSelectMany: false,
+      openLabel: "Use Project",
+      title: "Choose project folder",
+    });
+    return picked && picked.length ? uriToProjectPath(picked[0]) : "";
+  }
+
+  const input = await vscode.window.showInputBox({
+    title: "Project path or URI",
+    value,
+    prompt: "Supports local paths, file://, vscode-remote://, and wsl://Ubuntu/path",
+    placeHolder: "D:/Projects/MyProject",
+  });
+  return input ? input.trim() : "";
+}
+
+async function promptProjectFolderPath() {
+  const picked = await vscode.window.showOpenDialog({
+    canSelectFiles: false,
+    canSelectFolders: true,
+    canSelectMany: false,
+    openLabel: "Update Project Path",
+    title: "Choose project folder",
+  });
+  return picked && picked.length ? uriToProjectPath(picked[0]) : "";
 }
 
 async function openCalendarItem(item) {
@@ -912,10 +1039,18 @@ function getHtml(webview) {
     }
     main { min-width: 0; overflow: auto; padding: clamp(16px, 2vw, 30px); }
     .side-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 18px; }
-    .side-add { min-width: 30px; min-height: 30px; border: 1px solid var(--border); border-radius: 8px; color: var(--fg); background: var(--panel2); cursor: pointer; }
+    .side-actions { display: flex; gap: 6px; align-items: center; }
+    .side-add, .side-edit { min-height: 30px; border: 1px solid var(--border); border-radius: 8px; color: var(--fg); background: var(--panel2); cursor: pointer; }
+    .side-add { min-width: 30px; padding: 0 8px; }
+    .side-edit { padding: 0 10px; font-size: 12px; font-weight: 650; }
+    .side-add:hover, .side-edit:hover { border-color: var(--accent); background: var(--hover); }
     .side-title { font-size: 19px; font-weight: 750; }
     .side-kicker { color: var(--muted); font-size: 12px; text-transform: uppercase; }
     .projects { display: grid; gap: 6px; }
+    .project-row {
+      border-radius: 8px;
+    }
+    .project-row:hover { background: var(--hover); }
     .project {
       width: 100%;
       display: grid;
@@ -930,11 +1065,45 @@ function getHtml(webview) {
       padding: 10px 8px;
       text-align: left;
     }
-    .project:hover { background: var(--hover); }
     .folder { width: 16px; height: 12px; border-radius: 3px; background: var(--event); position: relative; }
     .folder:before { content: ""; position: absolute; top: -4px; left: 2px; width: 9px; height: 5px; border-radius: 3px 3px 0 0; background: inherit; }
     .pname { font-size: 14px; font-weight: 650; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .ppath { grid-column: 2; color: var(--muted); font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-top: -4px; }
+    .context-menu {
+      position: fixed;
+      z-index: 20;
+      min-width: 174px;
+      padding: 4px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: var(--vscode-menu-background, var(--panel));
+      color: var(--vscode-menu-foreground, var(--fg));
+      box-shadow: 0 8px 26px rgba(0, 0, 0, .28);
+    }
+    .context-menu button {
+      width: 100%;
+      min-height: 28px;
+      display: block;
+      border: 0;
+      border-radius: 4px;
+      background: transparent;
+      color: inherit;
+      cursor: pointer;
+      padding: 4px 28px 4px 12px;
+      text-align: left;
+      font: inherit;
+      font-size: 13px;
+    }
+    .context-menu button:hover,
+    .context-menu button:focus {
+      outline: 0;
+      background: var(--vscode-menu-selectionBackground, var(--hover));
+      color: var(--vscode-menu-selectionForeground, var(--fg));
+    }
+    .context-menu .danger:hover,
+    .context-menu .danger:focus {
+      background: color-mix(in srgb, var(--vscode-errorForeground, #f85149) 22%, transparent);
+    }
     .toolbar { display: flex; justify-content: flex-end; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; }
     .btn {
       border: 1px solid var(--border);
@@ -1047,7 +1216,10 @@ function getHtml(webview) {
     <aside>
       <div class="side-head">
         <div><span class="side-title">Projects</span></div>
-        <button class="side-add" id="addProject" title="Add project">+</button>
+        <div class="side-actions">
+          <button class="side-add" id="addProject" title="Add project">+</button>
+          <button class="side-edit" id="manageProjects" title="Edit or delete projects">Edit</button>
+        </div>
       </div>
       <div class="projects" id="projects"></div>
     </aside>
@@ -1101,6 +1273,10 @@ function getHtml(webview) {
       </div>
     </main>
   </div>
+  <div class="context-menu" id="projectContextMenu" hidden>
+    <button type="button" data-action="edit">Edit Path</button>
+    <button type="button" class="danger" data-action="delete">Delete Project</button>
+  </div>
   <script nonce="${nonce}">
     const vscode = acquireVsCodeApi();
     const locale = navigator.language || 'zh-CN';
@@ -1113,6 +1289,7 @@ function getHtml(webview) {
     const clockEl = document.getElementById('clock');
     const dateEl = document.getElementById('date');
     const projectsEl = document.getElementById('projects');
+    const projectContextMenuEl = document.getElementById('projectContextMenu');
     const weatherEl = document.getElementById('weather');
     const calendarEl = document.getElementById('calendar');
     const monthTitleEl = document.getElementById('monthTitle');
@@ -1139,6 +1316,8 @@ function getHtml(webview) {
         return;
       }
       projects.forEach((project, index) => {
+        const row = document.createElement('div');
+        row.className = 'project-row';
         const btn = document.createElement('button');
         btn.className = 'project';
         btn.title = project.path || '';
@@ -1148,8 +1327,30 @@ function getHtml(webview) {
         if (project.accent) btn.querySelector('.folder').style.background = project.accent;
         else btn.querySelector('.folder').style.filter = 'hue-rotate(' + (index * 48) + 'deg)';
         btn.onclick = () => vscode.postMessage({ type: 'openProject', path: project.path });
-        projectsEl.appendChild(btn);
+        btn.oncontextmenu = (event) => {
+          event.preventDefault();
+          showProjectContextMenu(index, event.clientX, event.clientY);
+        };
+        row.appendChild(btn);
+        projectsEl.appendChild(row);
       });
+    }
+
+    function showProjectContextMenu(index, x, y) {
+      projectContextMenuEl.dataset.index = String(index);
+      projectContextMenuEl.hidden = false;
+      const rect = projectContextMenuEl.getBoundingClientRect();
+      const left = Math.min(x, window.innerWidth - rect.width - 8);
+      const top = Math.min(y, window.innerHeight - rect.height - 8);
+      projectContextMenuEl.style.left = Math.max(8, left) + 'px';
+      projectContextMenuEl.style.top = Math.max(8, top) + 'px';
+      const first = projectContextMenuEl.querySelector('button');
+      if (first) first.focus();
+    }
+
+    function hideProjectContextMenu() {
+      projectContextMenuEl.hidden = true;
+      projectContextMenuEl.dataset.index = '';
     }
 
     function renderWeather(weather) {
@@ -1290,10 +1491,34 @@ function getHtml(webview) {
 
     document.getElementById('refreshAll').onclick = () => vscode.postMessage({ type: 'refreshAll' });
     document.getElementById('addProject').onclick = () => vscode.postMessage({ type: 'addProject' });
+    document.getElementById('manageProjects').onclick = () => vscode.postMessage({ type: 'manageProjects' });
     document.getElementById('manageCalendars').onclick = () => vscode.postMessage({ type: 'manageCalendars' });
     document.getElementById('prevMonth').onclick = () => { current.setMonth(current.getMonth() - 1); renderCalendar(); };
     document.getElementById('nextMonth').onclick = () => { current.setMonth(current.getMonth() + 1); renderCalendar(); };
     document.getElementById('todayBtn').onclick = () => { current = new Date(); renderCalendar(); };
+
+    projectContextMenuEl.addEventListener('click', (event) => {
+      const item = event.target.closest('button[data-action]');
+      if (!item) return;
+      const index = Number(projectContextMenuEl.dataset.index);
+      const type = item.dataset.action === 'delete' ? 'deleteProject' : 'editProjectPath';
+      hideProjectContextMenu();
+      vscode.postMessage({ type, index });
+    });
+
+    document.addEventListener('click', (event) => {
+      if (!projectContextMenuEl.hidden && !event.target.closest('#projectContextMenu')) {
+        hideProjectContextMenu();
+      }
+    });
+
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape') hideProjectContextMenu();
+    });
+
+    window.addEventListener('blur', hideProjectContextMenu);
+    window.addEventListener('resize', hideProjectContextMenu);
+    window.addEventListener('scroll', hideProjectContextMenu, true);
 
     calendarEl.addEventListener('click', (event) => {
       const button = event.target.closest('.event-label');
